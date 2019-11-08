@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.Constants;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
 /**
  *
@@ -28,15 +30,40 @@ public class ConfigurationUtilsTest {
 
     @Test
     public void testGetServerShutdownTimeout () {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, " 10000");
+        System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
         Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout());
-        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test
     public void testGetProperty () {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY));
-        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+        System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
+        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(SHUTDOWN_WAIT_KEY));
+        System.clearProperty(SHUTDOWN_WAIT_KEY);
+    }
+
+    @Test
+    public void testParseSingleProperties() throws Exception {
+        String p1 = "aaa=bbb";
+        Map<String, String> result = ConfigurationUtils.parseProperties(p1);
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("bbb", result.get("aaa"));
+    }
+
+    @Test
+    public void testParseMultipleProperties() throws Exception {
+        String p1 = "aaa=bbb\nccc=ddd";
+        Map<String, String> result = ConfigurationUtils.parseProperties(p1);
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals("bbb", result.get("aaa"));
+        Assertions.assertEquals("ddd", result.get("ccc"));
+    }
+
+    @Test
+    public void testEscapedNewLine() throws Exception {
+        String p1 = "dubbo.registry.address=zookeeper://127.0.0.1:2181\\\\ndubbo.protocol.port=20880";
+        Map<String, String> result = ConfigurationUtils.parseProperties(p1);
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("zookeeper://127.0.0.1:2181\\ndubbo.protocol.port=20880", result.get("dubbo.registry.address"));
     }
 }
