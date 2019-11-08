@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,14 @@ public class ConsumerModel {
         this.serviceMetadata = new ServiceMetadata(serviceName, group, version, interfaceClass);
 
         Method[] methods = interfaceClass.getMethods();
+        for (Method method : methods) {
+            methodModels.put(method, new ConsumerMethodModel(method));
+        }
+    }
+
+    public ConsumerModel(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+        Method[] methods = serviceMetadata.getServiceType().getMethods();
         for (Method method : methods) {
             methodModels.put(method, new ConsumerMethodModel(method));
         }
@@ -66,6 +75,20 @@ public class ConsumerModel {
         Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
         return consumerMethodModelEntry.map(Map.Entry::getValue).orElse(null);
     }
+
+    /**
+     * @param method   metodName
+     * @param argsType method arguments type
+     * @return
+     */
+    public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
+        Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
+                .filter(entry -> entry.getKey().getName().equals(method))
+                .map(Map.Entry::getValue).filter(methodModel ->  Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .findFirst();
+        return consumerMethodModel.orElse(null);
+    }
+
 
     /**
      * @return

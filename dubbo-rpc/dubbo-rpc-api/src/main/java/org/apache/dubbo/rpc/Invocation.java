@@ -57,7 +57,11 @@ public interface Invocation {
      * @return attachments.
      * @serial
      */
-    Map<String, String> getAttachments();
+    Map<String, Object> getAttachments();
+
+    void setAttachment(String key, Object value);
+
+    void setAttachmentIfAbsent(String key, Object value);
 
     /**
      * get attachment by key.
@@ -65,7 +69,7 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    String getAttachment(String key);
+    Object getAttachment(String key);
 
     /**
      * get attachment by key with default value.
@@ -73,7 +77,7 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    String getAttachment(String key, String defaultValue);
+    Object getAttachment(String key, Object defaultValue);
 
     /**
      * get the invoker in current context.

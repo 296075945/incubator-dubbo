@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
-
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.annotation.Priority;
@@ -29,6 +28,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Priority(Integer.MIN_VALUE + 1)
@@ -69,16 +69,18 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
+        for (Map.Entry<String, Object> entry : RpcContext.getContext().getAttachments().entrySet()) {
             String key = entry.getKey();
-            String value = entry.getKey();
+            Object value = entry.getValue();
             if (illegalForRest(key) || illegalForRest(value)) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
             }
 
+            String stringValue = (String) value;
+
             // TODO for now we don't consider the differences of encoding and server limit
             if (value != null) {
-                size += value.getBytes("UTF-8").length;
+                size += stringValue.getBytes(StandardCharsets.UTF_8).length;
             }
             if (size > MAX_HEADER_SIZE) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
@@ -95,9 +97,9 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
      * @param v string value
      * @return true for illegal
      */
-    private boolean illegalForRest(String v) {
-        if (StringUtils.isNotEmpty(v)) {
-            return v.contains(",") || v.contains("=");
+    private boolean illegalForRest(Object v) {
+        if (v instanceof String && StringUtils.isNotEmpty((String) v)) {
+            return ((String) v).contains(",") || ((String) v).contains("=");
         }
         return false;
     }

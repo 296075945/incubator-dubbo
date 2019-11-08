@@ -29,6 +29,15 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         return null;
     }
 
+    @Override
+    default void setAttachmentIfAbsent(String key, Object value) {
+    }
+
+    @Override
+    default void setAttachment(String key, Object value) {
+
+    }
+
     class CompatibleInvocation implements Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;
@@ -53,17 +62,17 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return delegate.getAttachments();
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return delegate.getAttachment(key);
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return delegate.getAttachment(key, defaultValue);
         }
 
